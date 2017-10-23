@@ -1,0 +1,95 @@
+version: '2'
+#version: '3'
+
+services:
+ wild1:
+  image: marls/wildfly
+  build: ./
+  hostname: wild1
+  volumes:
+   - ./wild-docker-files/standalone-ha-1.xml:/opt/jboss/wildfly/standalone/configuration/standalone-ha.xml
+   - ./volumes/wild1/deployments:/opt/jboss/wildfly/standalone/deployments
+#   - ./wild-docker-files/apptest.war:/opt/jboss/wildfly/standalone/deployments/apptest.war
+#   - ./wild-docker-files/apptest.war.dodeploy:/opt/jboss/wildfly/standalone/deployments/apptest.war.dodeploy
+  ports:
+   - "8081:8080"
+   - "9991:9990"
+  networks:
+   wildnetwork:
+      ipv4_address: 172.28.5.1
+  command: /opt/jboss/wildfly/bin/standalone.sh -c standalone-ha.xml -u 230.0.0.4
+
+ wild2:
+  image: marls/wildfly
+  build: ./
+  hostname: wild2
+  volumes:
+   - ./wild-docker-files/standalone-ha-2.xml:/opt/jboss/wildfly/standalone/configuration/standalone-ha.xml
+   - ./volumes/wild2/deployments:/opt/jboss/wildfly/standalone/deployments
+#   - ./wild-docker-files/apptest.war:/opt/jboss/wildfly/standalone/deployments/apptest.war
+#   - ./wild-docker-files/apptest.war.dodeploy:/opt/jboss/wildfly/standalone/deployments/apptest.war.dodeploy
+  ports:
+   - "8082:8080"
+   - "9992:9990"
+  networks:
+   wildnetwork:
+      ipv4_address: 172.28.5.2
+  command: /opt/jboss/wildfly/bin/standalone.sh -c standalone-ha.xml -u 230.0.0.4
+
+ wild3:
+  image: marls/wildfly
+  build: ./
+  hostname: wild3
+  volumes:
+   - ./wild-docker-files/standalone-ha-3.xml:/opt/jboss/wildfly/standalone/configuration/standalone-ha.xml
+   - ./volumes/wild3/deployments:/opt/jboss/wildfly/standalone/deployments
+#   - ./wild-docker-files/apptest.war:/opt/jboss/wildfly/standalone/deployments/apptest.war
+#   - ./wild-docker-files/apptest.war.dodeploy:/opt/jboss/wildfly/standalone/deployments/apptest.war.dodeploy
+  ports:
+   - "8083:8080"
+   - "9993:9990"
+  networks:
+   wildnetwork:
+      ipv4_address: 172.28.5.3
+  command: /opt/jboss/wildfly/bin/standalone.sh -c standalone-ha.xml -u 230.0.0.4
+
+ wild-balancer:
+  image: jasonwyatt/nginx-loadbalancer
+  ports:
+   - "8091:80"
+  env_file:
+   - ./wild-docker-files/env.list
+  environment:
+   - TOMCAT_PORT=8091
+  networks:
+   wildnetwork:
+      ipv4_address: 172.28.5.4
+
+ balancer2:
+  image: jasonwyatt/nginx-loadbalancer
+  ports:
+   - "8092:80"
+  environment:
+   - TOMCAT_PORT=8092
+   # automatically created environment variables (docker links)
+   - TOMCAT_1_PORT_8080_TCP_ADDR=wild1
+   - TOMCAT_2_PORT_8080_TCP_ADDR=wild2
+   - TOMCAT_3_PORT_8080_TCP_ADDR=wild3
+   # special environment variables
+   - TOMCAT_PATH=/console
+   - TOMCAT_REMOTE_PORT=8080
+   - TOMCAT_REMOTE_PATH=/console
+   - TOMCAT_HOSTNAME=balancer2
+  networks:
+   wildnetwork:
+      ipv4_address: 172.28.5.5
+
+networks:
+ wildnetwork:
+#  driver: overlay
+  driver: bridge
+  ipam:
+   config:
+    - subnet: 172.28.0.0/16
+      gateway: 172.28.5.254
+#    - ip-range: 172.28.5.0/24
