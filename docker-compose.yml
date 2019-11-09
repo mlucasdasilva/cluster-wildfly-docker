@@ -3,7 +3,7 @@ version: '2'
 
 services:
  wild1:
-  image: marls/wildfly
+  image: myimage/wildfly
   build: ./
   hostname: wild1
   volumes:
@@ -20,7 +20,7 @@ services:
   command: /opt/jboss/wildfly/bin/standalone.sh -c standalone-ha.xml -u 230.0.0.4
 
  wild2:
-  image: marls/wildfly
+  image: myimage/wildfly
   build: ./
   hostname: wild2
   volumes:
@@ -37,7 +37,7 @@ services:
   command: /opt/jboss/wildfly/bin/standalone.sh -c standalone-ha.xml -u 230.0.0.4
 
  wild3:
-  image: marls/wildfly
+  image: myimage/wildfly
   build: ./
   hostname: wild3
   volumes:
