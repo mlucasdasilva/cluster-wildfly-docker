@@ -65,7 +65,7 @@ services:
    wildnetwork:
       ipv4_address: 172.28.5.4
 
- balancer2:
+ console-balancer:
   image: jasonwyatt/nginx-loadbalancer
   ports:
    - "8092:80"
@@ -75,14 +75,60 @@ services:
    - TOMCAT_1_PORT_8080_TCP_ADDR=wild1
    - TOMCAT_2_PORT_8080_TCP_ADDR=wild2
    - TOMCAT_3_PORT_8080_TCP_ADDR=wild3
+   - TOMCAT_1_PORT_9990_TCP_ADDR=wild1
+   - TOMCAT_2_PORT_9990_TCP_ADDR=wild2
+   - TOMCAT_3_PORT_9990_TCP_ADDR=wild3
    # special environment variables
    - TOMCAT_PATH=/console
-   - TOMCAT_REMOTE_PORT=8080
+#   - TOMCAT_REMOTE_PORT=8080
+   - TOMCAT_REMOTE_PORT=9990
    - TOMCAT_REMOTE_PATH=/console
-   - TOMCAT_HOSTNAME=balancer2
+   - TOMCAT_HOSTNAME=console-balancer
   networks:
    wildnetwork:
       ipv4_address: 172.28.5.5
+
+ nginx1:
+  image: nginx
+  volumes:
+    - ./nginx1/conf.d:/etc/nginx/conf.d
+  ports:
+    - "8095:80"
+  environment:
+    - NGINX_HOST=nginx1
+    - NGINX_PORT=80
+  networks:
+   wildnetwork:
+
+ nginx2:
+  image: nginx
+  volumes:
+    - ./nginx2/conf.d:/etc/nginx/conf.d
+  ports:
+    - "8096:80"
+  environment:
+    - NGINX_HOST=nginx1
+    - NGINX_PORT=80
+  networks:
+   wildnetwork:
+
+ haproxy1:
+  image: haproxy:1.7
+  volumes:
+    - ./haproxy1/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    - ./haproxy1/conf.d:/usr/local/etc/haproxy/conf.d
+  ports:
+    - "8097:80"
+  networks:
+   wildnetwork:
+#   command: "haproxy -c -f /usr/local/etc/haproxy/haproxy.cfg"
+#   entrypoint: bash -c "haproxy -f /usr/local/etc/haproxy/haproxy.cfg"
+#   stdin_open: true
+#   tty: true
+#   entrypoint: "/bin/bash"
+#   command: "-c /bin/bash"
+
+
 
 networks:
  wildnetwork:
