@@ -4,6 +4,7 @@ version: '2'
 services:
  wild1:
   image: myimage/wildfly
+  # console user/password -- admin/admin123 
   build: ./
   hostname: wild1
   volumes:
@@ -107,7 +108,7 @@ services:
   ports:
     - "8096:80"
   environment:
-    - NGINX_HOST=nginx1
+    - NGINX_HOST=nginx2
     - NGINX_PORT=80
   networks:
    wildnetwork:
