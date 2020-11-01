@@ -13,3 +13,8 @@ FROM jboss/wildfly
 
 # Add user for adminstration purpose
 RUN /opt/jboss/wildfly/bin/add-user.sh admin admin123 --silent
+
+
+# Add user for slave access purpose in Domain Controler configuration
+# To represent the user add the following to the server-identities definition <secret value="c2xhdmUxMjM=" />
+RUN /opt/jboss/wildfly/bin/add-user.sh -u slave -p slave123 -g 'ManagementRealm' --display-secret
