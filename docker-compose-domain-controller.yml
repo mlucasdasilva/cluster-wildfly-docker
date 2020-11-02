@@ -16,11 +16,24 @@ services:
   networks:
    wildnetwork:
       ipv4_address: 172.28.5.10
-#  command: /opt/jboss/wildfly/bin/standalone.sh -c standalone-ha.xml -u 230.0.0.4
   command: /opt/jboss/wildfly/bin//domain.sh --host-config=host-master.xml -bmanagement=172.28.5.10
-#  command: /opt/jboss/wildfly/bin/domain.sh --host-config host-slave.xml
+#  command: /opt/jboss/wildfly/bin/domain.sh --host-config=host-master.xml -b 0.0.0.0 -bmanagement 0.0.0.0
 #  command: /opt/jboss/wildfly/bin/domain.sh -b 0.0.0.0 -bmanagement 0.0.0.0
-#  /opt/jboss/wildfly/bin/jboss-cli.sh --connect --command="deploy /opt/war-files/apptest.war --all-server-groups" --controller=remote+http://wild-dc:9990
+
+ wild-dc-backup:
+  image: myimage/wildfly
+  build: ./
+  hostname: wild-dc-backup
+  volumes:
+   - ./wild-docker-files/host-master.xml:/opt/jboss/wildfly/domain/configuration/host-master.xml
+   - ./war-files:/opt/war-files
+  ports:
+   - "8089:8080"
+   - "9999:9990"
+  networks:
+   wildnetwork:
+      ipv4_address: 172.28.5.20
+  command: /opt/jboss/wildfly/bin//domain.sh --host-config=host-master.xml -bmanagement=172.28.5.20
 
  wild-deploy:
   image: myimage/wildfly
@@ -32,7 +45,7 @@ services:
    - ./war-files:/opt/war-files
   networks:
    wildnetwork:
-      ipv4_address: 172.28.5.20
+      ipv4_address: 172.28.5.21
 #  command: tail -f /dev/null
   command: bash -c 'echo "deploy script" ; RESULT=1 ; while [ $$RESULT -ne 0 ] ; do  sleep 20 ; /opt/jboss/wildfly/bin/jboss-cli.sh --connect --command="deploy /opt/war-files/apptest.war --all-server-groups" --controller=remote+http://wild-dc:9990 -u=admin -p=admin123 ; RESULT=$$? ; echo "RESULT=$$RESULT" ; done'
 
@@ -42,21 +55,14 @@ services:
   hostname: wild-slave1
   volumes:
    - ./wild-docker-files/host-slave.xml:/opt/jboss/wildfly/domain/configuration/host-slave.xml
-#   - ./volumes/wild1/deployments:/opt/jboss/wildfly/domain/servers/server-one/tmp/
-#   - ./volumes/wild1/deployments:/opt/jboss/wildfly/standalone/deployments
-##   - ./wild-docker-files/apptest.war:/opt/jboss/wildfly/standalone/deployments/apptest.war
-##   - ./wild-docker-files/apptest.war.dodeploy:/opt/jboss/wildfly/standalone/deployments/apptest.war.dodeploy
   ports:
-   - "8085:8080"
-   - "8235:8230"
-   - "9995:9990"
+   - "8081:8080"
+   - "8231:8230"
+   - "9991:9990"
   networks:
    wildnetwork:
       ipv4_address: 172.28.5.15
-#  command: /opt/jboss/wildfly/bin/standalone.sh -c standalone-ha.xml -u 230.0.0.4
-#  command: /opt/jboss/wildfly/bin//domain.sh --host-config=host-master.xml -bmanagement=172.28.5.10
-  command: /opt/jboss/wildfly/bin/domain.sh --host-config host-slave.xml -b 0.0.0.0 -bmanagement 0.0.0.0 -Djboss.domain.master.address=172.28.5.10
-#  command: /opt/jboss/wildfly/bin/domain.sh -b 0.0.0.0 -bmanagement 0.0.0.0
+  command: /opt/jboss/wildfly/bin/domain.sh --host-config host-slave.xml -b 0.0.0.0 -bmanagement 0.0.0.0 -Djboss.domain.master.address=172.28.5.10 -Djboss.domain.master2.address=172.28.5.20
 
  wild-slave2:
   image: myimage/wildfly
@@ -64,20 +70,14 @@ services:
   hostname: wild-slave2
   volumes:
    - ./wild-docker-files/host-slave.xml:/opt/jboss/wildfly/domain/configuration/host-slave.xml
-#   - ./volumes/wild1/deployments:/opt/jboss/wildfly/standalone/deployments
-##   - ./wild-docker-files/apptest.war:/opt/jboss/wildfly/standalone/deployments/apptest.war
-##   - ./wild-docker-files/apptest.war.dodeploy:/opt/jboss/wildfly/standalone/deployments/apptest.war.dodeploy
   ports:
-   - "8086:8080"
-   - "8236:8230"
-   - "9996:9990"
+   - "8082:8080"
+   - "8232:8230"
+   - "9992:9990"
   networks:
    wildnetwork:
       ipv4_address: 172.28.5.16
-#  command: /opt/jboss/wildfly/bin/standalone.sh -c standalone-ha.xml -u 230.0.0.4
-#  command: /opt/jboss/wildfly/bin//domain.sh --host-config=host-master.xml -bmanagement=172.28.5.10
-  command: /opt/jboss/wildfly/bin/domain.sh --host-config host-slave.xml -b 0.0.0.0 -bmanagement 0.0.0.0 -Djboss.domain.master.address=172.28.5.10
-#  command: /opt/jboss/wildfly/bin/domain.sh -b 0.0.0.0 -bmanagement 0.0.0.0
+  command: /opt/jboss/wildfly/bin/domain.sh --host-config host-slave.xml -b 0.0.0.0 -bmanagement 0.0.0.0 -Djboss.domain.master.address=172.28.5.10 -Djboss.domain.master2.address=172.28.5.20
 
  wild-slave3:
   image: myimage/wildfly
@@ -85,20 +85,14 @@ services:
   hostname: wild-slave3
   volumes:
    - ./wild-docker-files/host-slave.xml:/opt/jboss/wildfly/domain/configuration/host-slave.xml
-#   - ./volumes/wild1/deployments:/opt/jboss/wildfly/standalone/deployments
-##   - ./wild-docker-files/apptest.war:/opt/jboss/wildfly/standalone/deployments/apptest.war
-##   - ./wild-docker-files/apptest.war.dodeploy:/opt/jboss/wildfly/standalone/deployments/apptest.war.dodeploy
   ports:
-   - "8087:8080"
-   - "8237:8230"
-   - "9997:9990"
+   - "8083:8080"
+   - "8233:8230"
+   - "9993:9990"
   networks:
    wildnetwork:
       ipv4_address: 172.28.5.17
-#  command: /opt/jboss/wildfly/bin/standalone.sh -c standalone-ha.xml -u 230.0.0.4
-#  command: /opt/jboss/wildfly/bin//domain.sh --host-config=host-master.xml -bmanagement=172.28.5.10
-  command: /opt/jboss/wildfly/bin/domain.sh --host-config host-slave.xml -b 0.0.0.0 -bmanagement 0.0.0.0 -Djboss.domain.master.address=172.28.5.10
-#  command: /opt/jboss/wildfly/bin/domain.sh -b 0.0.0.0 -bmanagement 0.0.0.0
+  command: /opt/jboss/wildfly/bin/domain.sh --host-config host-slave.xml -b 0.0.0.0 -bmanagement 0.0.0.0 -Djboss.domain.master.address=172.28.5.10 -Djboss.domain.master2.address=172.28.5.20
 
 
 networks:
