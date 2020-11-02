@@ -25,7 +25,7 @@ services:
   build: ./
   hostname: wild-dc-backup
   volumes:
-   - ./wild-docker-files/host-master.xml:/opt/jboss/wildfly/domain/configuration/host-master.xml
+   - ./wild-docker-files/host-slave-master-backup.xml:/opt/jboss/wildfly/domain/configuration/host-slave.xml
    - ./war-files:/opt/war-files
   ports:
    - "8089:8080"
@@ -33,7 +33,7 @@ services:
   networks:
    wildnetwork:
       ipv4_address: 172.28.5.20
-  command: /opt/jboss/wildfly/bin//domain.sh --host-config=host-master.xml -bmanagement=172.28.5.20
+  command: /opt/jboss/wildfly/bin/domain.sh --host-config host-slave.xml -b 0.0.0.0 --backup -bmanagement 0.0.0.0 -Djboss.domain.master.address=172.28.5.10 -Djboss.domain.master2.address=172.28.5.20
 
  wild-deploy:
   image: myimage/wildfly
@@ -49,10 +49,10 @@ services:
 #  command: tail -f /dev/null
   command: bash -c 'echo "deploy script" ; RESULT=1 ; while [ $$RESULT -ne 0 ] ; do  sleep 20 ; /opt/jboss/wildfly/bin/jboss-cli.sh --connect --command="deploy /opt/war-files/apptest.war --all-server-groups" --controller=remote+http://wild-dc:9990 -u=admin -p=admin123 ; RESULT=$$? ; echo "RESULT=$$RESULT" ; done'
 
- wild-slave1:
+ wild1:
   image: myimage/wildfly
   build: ./
-  hostname: wild-slave1
+  hostname: wild1
   volumes:
    - ./wild-docker-files/host-slave.xml:/opt/jboss/wildfly/domain/configuration/host-slave.xml
   ports:
@@ -64,10 +64,10 @@ services:
       ipv4_address: 172.28.5.15
   command: /opt/jboss/wildfly/bin/domain.sh --host-config host-slave.xml -b 0.0.0.0 -bmanagement 0.0.0.0 -Djboss.domain.master.address=172.28.5.10 -Djboss.domain.master2.address=172.28.5.20
 
- wild-slave2:
+ wild2:
   image: myimage/wildfly
   build: ./
-  hostname: wild-slave2
+  hostname: wild2
   volumes:
    - ./wild-docker-files/host-slave.xml:/opt/jboss/wildfly/domain/configuration/host-slave.xml
   ports:
@@ -79,10 +79,10 @@ services:
       ipv4_address: 172.28.5.16
   command: /opt/jboss/wildfly/bin/domain.sh --host-config host-slave.xml -b 0.0.0.0 -bmanagement 0.0.0.0 -Djboss.domain.master.address=172.28.5.10 -Djboss.domain.master2.address=172.28.5.20
 
- wild-slave3:
+ wild3:
   image: myimage/wildfly
   build: ./
-  hostname: wild-slave3
+  hostname: wild3
   volumes:
    - ./wild-docker-files/host-slave.xml:/opt/jboss/wildfly/domain/configuration/host-slave.xml
   ports:
@@ -93,6 +93,58 @@ services:
    wildnetwork:
       ipv4_address: 172.28.5.17
   command: /opt/jboss/wildfly/bin/domain.sh --host-config host-slave.xml -b 0.0.0.0 -bmanagement 0.0.0.0 -Djboss.domain.master.address=172.28.5.10 -Djboss.domain.master2.address=172.28.5.20
+
+ wild-balancer:
+  image: jasonwyatt/nginx-loadbalancer
+  ports:
+   - "8091:80"
+  env_file:
+   - ./wild-docker-files/env.list
+  environment:
+   - TOMCAT_PORT=8091
+  networks:
+   wildnetwork:
+      ipv4_address: 172.28.5.4
+
+ nginx1:
+  image: nginx
+  volumes:
+    - ./nginx1/conf.d:/etc/nginx/conf.d
+  ports:
+    - "8095:80"
+  environment:
+    - NGINX_HOST=nginx1
+    - NGINX_PORT=80
+  networks:
+   wildnetwork:
+
+ nginx2:
+  image: nginx
+  volumes:
+    - ./nginx2/conf.d:/etc/nginx/conf.d
+  ports:
+    - "8096:80"
+  environment:
+    - NGINX_HOST=nginx2
+    - NGINX_PORT=80
+  networks:
+   wildnetwork:
+
+ haproxy1:
+  image: haproxy:1.7
+  volumes:
+    - ./haproxy1/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    - ./haproxy1/conf.d:/usr/local/etc/haproxy/conf.d
+  ports:
+    - "8097:80"
+  networks:
+   wildnetwork:
+#   command: "haproxy -c -f /usr/local/etc/haproxy/haproxy.cfg"
+#   entrypoint: bash -c "haproxy -f /usr/local/etc/haproxy/haproxy.cfg"
+#   stdin_open: true
+#   tty: true
+#   entrypoint: "/bin/bash"
+#   command: "-c /bin/bash"
 
 
 networks:
