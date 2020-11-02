@@ -10,8 +10,6 @@ services:
   volumes:
    - ./wild-docker-files/host-master.xml:/opt/jboss/wildfly/domain/configuration/host-master.xml
 #   - ./volumes/wild1/deployments:/opt/jboss/wildfly/standalone/deployments
-##   - ./wild-docker-files/apptest.war:/opt/jboss/wildfly/standalone/deployments/apptest.war
-##   - ./wild-docker-files/apptest.war.dodeploy:/opt/jboss/wildfly/standalone/deployments/apptest.war.dodeploy
   ports:
    - "8080:8080"
    - "9990:9990"
@@ -23,13 +21,13 @@ services:
 #  command: /opt/jboss/wildfly/bin/domain.sh --host-config host-slave.xml
 #  command: /opt/jboss/wildfly/bin/domain.sh -b 0.0.0.0 -bmanagement 0.0.0.0
 
-
  wild-slave1:
   image: myimage/wildfly
   build: ./
   hostname: wild-slave1
   volumes:
    - ./wild-docker-files/host-slave.xml:/opt/jboss/wildfly/domain/configuration/host-slave.xml
+#   - ./volumes/wild1/deployments:/opt/jboss/wildfly/domain/servers/server-one/tmp/
 #   - ./volumes/wild1/deployments:/opt/jboss/wildfly/standalone/deployments
 ##   - ./wild-docker-files/apptest.war:/opt/jboss/wildfly/standalone/deployments/apptest.war
 ##   - ./wild-docker-files/apptest.war.dodeploy:/opt/jboss/wildfly/standalone/deployments/apptest.war.dodeploy
@@ -66,7 +64,6 @@ services:
   command: /opt/jboss/wildfly/bin/domain.sh --host-config host-slave.xml -b 0.0.0.0 -bmanagement 0.0.0.0 -Djboss.domain.master.address=172.28.5.10
 #  command: /opt/jboss/wildfly/bin/domain.sh -b 0.0.0.0 -bmanagement 0.0.0.0
 
-
  wild-slave3:
   image: myimage/wildfly
   build: ./
@@ -87,7 +84,6 @@ services:
 #  command: /opt/jboss/wildfly/bin//domain.sh --host-config=host-master.xml -bmanagement=172.28.5.10
   command: /opt/jboss/wildfly/bin/domain.sh --host-config host-slave.xml -b 0.0.0.0 -bmanagement 0.0.0.0 -Djboss.domain.master.address=172.28.5.10
 #  command: /opt/jboss/wildfly/bin/domain.sh -b 0.0.0.0 -bmanagement 0.0.0.0
-
 
 
 networks:
