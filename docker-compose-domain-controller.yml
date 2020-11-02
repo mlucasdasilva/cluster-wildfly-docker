@@ -34,7 +34,7 @@ services:
    wildnetwork:
       ipv4_address: 172.28.5.20
 #  command: tail -f /dev/null
-  command: bash -c "sleep 180 ; /opt/jboss/wildfly/bin/jboss-cli.sh --connect --command='deploy /opt/war-files/apptest.war --all-server-groups' --controller=remote+http://wild-dc:9990 -u=admin -p=admin123"
+  command: bash -c 'echo "deploy script" ; RESULT=1 ; while [ $$RESULT -ne 0 ] ; do  sleep 20 ; /opt/jboss/wildfly/bin/jboss-cli.sh --connect --command="deploy /opt/war-files/apptest.war --all-server-groups" --controller=remote+http://wild-dc:9990 -u=admin -p=admin123 ; RESULT=$$? ; echo "RESULT=$$RESULT" ; done'
 
  wild-slave1:
   image: myimage/wildfly
