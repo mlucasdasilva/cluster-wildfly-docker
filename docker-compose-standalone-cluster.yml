@@ -19,7 +19,7 @@ services:
   networks:
    wildnetwork:
       ipv4_address: 172.28.5.1
-  command: /opt/jboss/wildfly/bin/standalone.sh -c standalone-ha.xml -u 230.0.0.4
+  command: /opt/jboss/wildfly/bin/standalone.sh -c standalone-ha.xml -u 230.0.0.4 -Djboss.bind.address=172.28.5.1 -Djboss.bind.address.management=172.28.5.1 -Djboss.bind.address.private=172.28.5.1
 
  wild2:
   image: myimage/wildfly
@@ -36,7 +36,7 @@ services:
   networks:
    wildnetwork:
       ipv4_address: 172.28.5.2
-  command: /opt/jboss/wildfly/bin/standalone.sh -c standalone-ha.xml -u 230.0.0.4
+  command: /opt/jboss/wildfly/bin/standalone.sh -c standalone-ha.xml -u 230.0.0.4 -Djboss.bind.address=172.28.5.2 -Djboss.bind.address.management=172.28.5.2 -Djboss.bind.address.private=172.28.5.2
 
  wild3:
   image: myimage/wildfly
@@ -53,7 +53,7 @@ services:
   networks:
    wildnetwork:
       ipv4_address: 172.28.5.3
-  command: /opt/jboss/wildfly/bin/standalone.sh -c standalone-ha.xml -u 230.0.0.4
+  command: /opt/jboss/wildfly/bin/standalone.sh -c standalone-ha.xml -u 230.0.0.4 -Djboss.bind.address=172.28.5.3 -Djboss.bind.address.management=172.28.5.3 -Djboss.bind.address.private=172.28.5.3
 
  wild-balancer:
   image: jasonwyatt/nginx-loadbalancer
