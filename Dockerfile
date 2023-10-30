@@ -1,4 +1,5 @@
-FROM jboss/wildfly
+FROM jboss/wildfly:21.0.2.Final
+#FROM jboss/wildfly
 
 # Environment variable with default value
 #ARG APP_FILE=appfile.war
